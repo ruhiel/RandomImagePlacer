@@ -33,7 +33,9 @@ namespace RandomImagePlacer
         static void GenerateRandomImage(Options opts)
         {
             if (!Directory.Exists(opts.InputPath))
+            {
                 throw new DirectoryNotFoundException($"フォルダが見つかりません: {opts.InputPath}");
+            }
 
             string[] extensions = { ".jpg", ".jpeg", ".png", ".bmp" };
             var files = Directory.GetFiles(opts.InputPath)
@@ -77,10 +79,32 @@ namespace RandomImagePlacer
 
                             var newRect = new Rectangle(x, y, destWidth, destHeight);
 
-                            // 衝突判定
+                            // 衝突判定（簡易的に矩形で判定）
                             if (!placedRects.Any(r => r.IntersectsWith(newRect)))
                             {
-                                g.DrawImage(img, x, y, destWidth, destHeight);
+                                // ランダムな角度を決定 (-MaxAngle ～ MaxAngle)
+                                float angle = 0;
+                                if (opts.MaxAngle > 0)
+                                {
+                                    angle = (float)(rand.NextDouble() * 2 * opts.MaxAngle - opts.MaxAngle);
+                                }
+
+                                // グラフィックス状態の保存
+                                var state = g.Save();
+
+                                // 回転の中心を画像の中心に設定
+                                var centerX = x + destWidth / 2f;
+                                var centerY = y + destHeight / 2f;
+
+                                g.TranslateTransform(centerX, centerY);
+                                g.RotateTransform(angle);
+
+                                // 画像の描画（中心に移動しているため、座標は中心からのオフセット）
+                                g.DrawImage(img, -destWidth / 2f, -destHeight / 2f, destWidth, destHeight);
+
+                                // 状態の復元
+                                g.Restore(state);
+
                                 placedRects.Add(newRect);
                                 placed = true;
                                 successCount++;
@@ -93,5 +117,4 @@ namespace RandomImagePlacer
             }
         }
     }
-
 }

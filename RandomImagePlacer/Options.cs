@@ -26,6 +26,9 @@ namespace RandomImagePlacer
 
         [Option('f', "factor", Default = 0.5f, HelpText = "縮小倍率 (0.1 - 1.0)")]
         public float ResizeFactor { get; set; }
+
+        [Option('a', "max-angle", Default = 0, HelpText = "最大傾き角度 (0-180)")]
+        public int MaxAngle { get; set; }
     }
 
 }
